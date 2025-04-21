@@ -1,8 +1,19 @@
 use regex::Regex;
+use std::io::Write;
 use std::path::PathBuf;
+
 use std::{fs, io};
 
 const FOLDERS_LIMIT: usize = 1000;
+
+pub fn append_to_file(file_path: &str, content: &str) -> io::Result<()> {
+    let mut file = fs::OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open(file_path)?;
+    writeln!(file, "{}", content)?;
+    Ok(())
+}
 
 pub fn get_parent_folders_pathes(parent_folders: Vec<PathBuf>) -> Vec<PathBuf> {
     let re = Regex::new(r"^\d+$").unwrap(); // Matches strings that are only digits
