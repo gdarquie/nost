@@ -1,12 +1,17 @@
+use dotenv::dotenv;
 use nost::{get_files_from_path, get_folders_pathes, get_parent_folders_pathes};
 use std::env;
 use std::path::PathBuf;
 use std::{fs, io};
 
 const FILES_LIMIT: usize = 100000;
-const NOT_PATH: &str = "/home/gaetan/not";
 
 fn main() -> io::Result<()> {
+    // Load environment variables from the `.env` file
+    dotenv().ok();
+
+    let not_path = env::var("NOT_PATH").expect("NOT_PATH must be set in the .env file");
+
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
@@ -19,7 +24,7 @@ fn main() -> io::Result<()> {
     }
 
     match args[1].as_str() {
-        "stats" => run_stats(),
+        "stats" => run_stats(&not_path),
         "extract" => {
             if args.len() < 3 {
                 eprintln!("Usage: cargo run extract <keyword>");
@@ -27,7 +32,7 @@ fn main() -> io::Result<()> {
             }
             run_extract(&args[2])
         }
-        "append" => run_append(),
+        "append" => run_append(&not_path),
         _ => {
             eprintln!("Unknown command: {}", args[1]);
             eprintln!("Use 'cargo run' without arguments to see available commands.");
@@ -36,8 +41,8 @@ fn main() -> io::Result<()> {
     }
 }
 
-fn run_stats() -> io::Result<()> {
-    let all_files = get_not_files_pathes()?;
+fn run_stats(not_path: &str) -> io::Result<()> {
+    let all_files = get_not_files_pathes(&not_path)?;
 
     println!("Number of files: {}", all_files.len());
 
@@ -64,11 +69,11 @@ fn run_extract(keyword: &str) -> io::Result<()> {
     Ok(())
 }
 
-fn run_append() -> io::Result<()> {
+fn run_append(not_path: &str) -> io::Result<()> {
     println!("Appending content to the last `.md` file in the not folder...");
 
     // Find all `.md` files in the NOT_PATH directory
-    let mut md_files = get_not_files_pathes()?;
+    let mut md_files = get_not_files_pathes(not_path)?;
 
     // Sort the files based on the numeric representation of their paths
     md_files.sort_by_key(|path| {
@@ -104,8 +109,8 @@ fn run_append() -> io::Result<()> {
     Ok(())
 }
 
-fn get_not_files_pathes() -> io::Result<Vec<PathBuf>> {
-    let mut parent_folders = fs::read_dir(NOT_PATH)?
+fn get_not_files_pathes(not_path: &str) -> io::Result<Vec<PathBuf>> {
+    let mut parent_folders = fs::read_dir(not_path)?
         .map(|parent_folder| parent_folder.map(|e| e.path()))
         .collect::<Result<Vec<_>, io::Error>>()?;
 
