@@ -1,5 +1,5 @@
 use dotenv::dotenv;
-use nost::{handle_command, print_usage};
+use nost::commander::{handle_command, print_usage};
 use std::env;
 use std::io;
 
