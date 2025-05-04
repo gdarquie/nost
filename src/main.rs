@@ -1,5 +1,5 @@
 use dotenv::dotenv;
-use nost::commander::{handle_command, print_usage};
+use nost::commander::{dispatch, print_commands};
 use std::env;
 use std::io;
 
@@ -11,9 +11,9 @@ fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
-        print_usage();
+        print_commands();
         return Ok(());
     }
 
-    handle_command(&args, &not_path)
+    dispatch(&args, &not_path)
 }
