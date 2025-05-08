@@ -14,4 +14,4 @@ tempfile = "3.6"
 
 [lib]
 name = "nost"
-path = "src/lib.rs"
+path = "src/libs/lib.rs"

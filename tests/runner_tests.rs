@@ -47,7 +47,7 @@ fn test_run_stats() {
     writeln!(file, "Hello, world!").unwrap();
 
     // Call run_stats to get stats for the file
-    let result = run_stats(temp_dir.path().to_str().unwrap());
+    let result = run_stats(temp_dir.path().to_str().unwrap(), 1000);
     assert!(result.is_ok());
 
     // Verify that the function executed successfully
