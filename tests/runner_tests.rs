@@ -1,4 +1,4 @@
-use nost::runner::{run_append, run_extract, run_stats};
+use nost::commands::{run_append, run_extract, run_stats};
 use std::fs::File;
 use std::io::Write;
 use tempfile::tempdir;

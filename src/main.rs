@@ -1,5 +1,5 @@
 use dotenv::dotenv;
-use nost::dispatcher::{dispatch, print_commands};
+use nost::commands::{append, compute_stats, extract, print_commands};
 use std::env;
 use std::io;
 
@@ -19,5 +19,20 @@ fn main() -> io::Result<()> {
         return Ok(());
     }
 
-    dispatch(&args, &not_path, &files_limit)
+    match args[1].as_str() {
+        "stats" => compute_stats(&not_path, &files_limit),
+        "extract" => {
+            if args.len() < 3 {
+                eprintln!("Usage: cargo run extract <keyword>");
+                return Ok(());
+            }
+            extract(&args[2])
+        }
+        "append" => append(&not_path, &files_limit),
+        _ => {
+            eprintln!("Unknown command: {}", args[1]);
+            eprintln!("Use 'cargo run' without arguments to see available commands.");
+            Ok(())
+        }
+    }
 }
