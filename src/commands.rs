@@ -1,4 +1,4 @@
-use crate::files::get_not_files_pathes;
+use crate::files::get_files_from_path;
 use std::{fs, io};
 
 pub fn print_commands() {
@@ -9,18 +9,31 @@ pub fn print_commands() {
 }
 
 pub fn compute_stats(not_path: &str, files_limit: &usize) -> io::Result<()> {
-    let all_files = get_not_files_pathes(&not_path, files_limit)?;
+    let all_files = get_files_from_path((&not_path).into());
 
-    println!("Number of files: {}", all_files.len());
+    match all_files {
+        Ok(files) => {
+            for file in files {
+                let lines = fs::read_to_string(&file).unwrap_or_default();
+                let line_count = lines.lines().count();
+                let word_count = lines.split_whitespace().count();
 
-    all_files.iter().for_each(|file| {
-        let lines = fs::read_to_string(file).unwrap_or_default();
-        let line_count = lines.lines().count();
-        let word_count = lines.split_whitespace().count();
-
-        println!("File: {} - Number of lines: {}", file.display(), line_count);
-        println!("File: {} - Number of words: {}", file.display(), word_count);
-    });
+                println!(
+                    "File: {} - Number of lines: {}",
+                    &file.display(),
+                    line_count
+                );
+                println!(
+                    "File: {} - Number of words: {}",
+                    &file.display(),
+                    word_count
+                );
+            }
+        }
+        Err(err) => {
+            eprintln!("Error retrieving files: {}", err);
+        }
+    }
 
     Ok(())
 }
