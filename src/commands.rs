@@ -53,16 +53,13 @@ pub fn append(not_path: &str, files_limit: &usize) -> io::Result<()> {
     println!("Appending content to the last `.md` file in the not folder...");
 
     // Find all `.md` files in the NOT_PATH directory
-    let mut md_files = get_not_files_pathes(not_path, files_limit)?;
-
-    // Sort the files based on the numeric representation of their paths
-    md_files.sort_by_key(|path| {
-        path.to_string_lossy()
-            .replace("/", "") // Remove all slashes
-            .replace(".md", "") // Remove the `.md` extension
-            .parse::<u64>() // Parse the resulting string as a number
-            .unwrap_or(0) // Use 0 if parsing fails
-    });
+    let md_files = match get_files_from_path(not_path.into()) {
+        Ok(files) => files,
+        Err(err) => {
+            eprintln!("Error retrieving files: {}", err);
+            return Ok(());
+        }
+    };
 
     // Get the last `.md` file
     if let Some(last_md_file) = md_files.last() {
@@ -77,6 +74,7 @@ pub fn append(not_path: &str, files_limit: &usize) -> io::Result<()> {
             .append(true)
             .open(last_md_file)?;
 
+        writeln!(file, "\n")?;
         writeln!(file, "[//]: # \"extract-start-test\"")?;
         writeln!(file, "\n")?;
         writeln!(file, "[//]: # \"extract-end-test\"")?;

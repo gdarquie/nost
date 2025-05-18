@@ -1,7 +1,7 @@
 mod commands;
 mod files;
 
-use commands::{compute_stats, print_commands};
+use commands::{append, compute_stats, extract, print_commands};
 use dotenv::dotenv;
 use std::env;
 use std::io;
@@ -23,22 +23,19 @@ fn main() -> io::Result<()> {
     }
 
     match args[1].as_str() {
-        // temp for testing
-        // end of temp
         "stats" => compute_stats(&not_path, &files_limit),
-        // "extract" => {
-        //     if args.len() < 3 {
-        //         eprintln!("Usage: cargo run extract <keyword>");
-        //         return Ok(());
-        //     }
-        //     extract(&args[2])
-        // }
-        // "append" => append(&not_path, &files_limit),
-        // _ => {
-        //     eprintln!("Unknown command: {}", args[1]);
-        //     eprintln!("Use 'cargo run' without arguments to see available commands.");
-        //     Ok(())
-        // }
-        &_ => todo!(),
+        "extract" => {
+            if args.len() < 3 {
+                eprintln!("Usage: cargo run extract <keyword>");
+                return Ok(());
+            }
+            extract(&args[2])
+        }
+        "append" => append(&not_path, &files_limit),
+        _ => {
+            eprintln!("Unknown command: {}", args[1]);
+            eprintln!("Use 'cargo run' without arguments to see available commands.");
+            Ok(())
+        }
     }
 }
