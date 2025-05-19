@@ -1,4 +1,6 @@
 use crate::files::get_files_from_path;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::{fs, io};
 
 pub fn print_commands() {
@@ -8,7 +10,7 @@ pub fn print_commands() {
     eprintln!("  append               Append content to a file");
 }
 
-pub fn compute_stats(not_path: &str, files_limit: &usize) -> io::Result<()> {
+pub fn compute_stats(not_path: &str, _files_limit: &usize) -> io::Result<()> {
     let all_files = get_files_from_path((&not_path).into());
 
     match all_files {
@@ -38,18 +40,7 @@ pub fn compute_stats(not_path: &str, files_limit: &usize) -> io::Result<()> {
     Ok(())
 }
 
-pub fn extract(keyword: &str) -> io::Result<()> {
-    println!("Extracting content with keyword: {}", keyword);
-    // TODO: Implement extraction logic
-
-    // use lib and get all folders then files
-    // for each file, check if the keyword is in the file
-    // if it is, get the last extract and append it
-    // to the last not file
-    Ok(())
-}
-
-pub fn append(not_path: &str, files_limit: &usize) -> io::Result<()> {
+pub fn append(not_path: &str, _files_limit: &usize) -> io::Result<()> {
     println!("Appending content to the last `.md` file in the not folder...");
 
     // Find all `.md` files in the NOT_PATH directory
@@ -66,9 +57,6 @@ pub fn append(not_path: &str, files_limit: &usize) -> io::Result<()> {
         println!("Found last `.md` file: {}", last_md_file.display());
 
         // Append content to the file
-        use std::fs::OpenOptions;
-        use std::io::Write;
-
         let mut file = OpenOptions::new()
             .write(true)
             .append(true)
@@ -86,5 +74,56 @@ pub fn append(not_path: &str, files_limit: &usize) -> io::Result<()> {
         println!("No `.md` files found in the not folder.");
     }
 
+    Ok(())
+}
+
+pub fn start_idea(not_path: &str, _files_limit: &usize) -> io::Result<()> {
+    println!("Starting idea...");
+    // if idea already exists, we could think to add a log to say it
+    // append the idea to the last file
+    let not_files = match get_files_from_path(not_path.into()) {
+        Ok(files) => files,
+        Err(err) => {
+            eprintln!("Error retrieving files: {}", err);
+            return Ok(());
+        }
+    };
+
+    if let Some(last_md_file) = not_files.last() {
+        println!("Found last `.md` file: {}", last_md_file.display());
+
+        // Append content to the file
+        let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(last_md_file)?;
+
+        writeln!(file, "\n")?;
+        writeln!(file, "## [nost-idea]")?;
+        writeln!(file, "\n")?;
+
+        println!(
+            "Content appended successfully to {}",
+            last_md_file.display()
+        );
+    } else {
+        println!("No `.md` files found in the not folder.");
+    }
+
+    // let mut file = OpenOptions::new().write(true).append(true).open(last_not)?;
+    // writeln!(file, "\n")?;
+    // writeln!(file, "[//]: # \"extract-start-test\"")?;
+    // writeln!(file, "\n")?;
+    // writeln!(file, "[//]: # \"extract-end-test\"")?;
+    // println!(
+    //     "Content appended successfully to {}",
+    //     last_md_file.display()
+    // );
+
+    Ok(())
+}
+
+pub fn list_ideas() -> io::Result<()> {
+    println!("List existing ideas...");
     Ok(())
 }

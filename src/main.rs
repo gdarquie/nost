@@ -1,7 +1,7 @@
 mod commands;
 mod files;
 
-use commands::{append, compute_stats, extract, print_commands};
+use commands::{append, compute_stats, list_ideas, print_commands, start_idea};
 use dotenv::dotenv;
 use std::env;
 use std::io;
@@ -23,14 +23,15 @@ fn main() -> io::Result<()> {
     }
 
     match args[1].as_str() {
-        "stats" => compute_stats(&not_path, &files_limit),
-        "extract" => {
+        "idea" => {
             if args.len() < 3 {
-                eprintln!("Usage: cargo run extract <keyword>");
-                return Ok(());
+                return list_ideas();
             }
-            extract(&args[2])
+            let idea = &args[2];
+            println!("Idea: {}", idea);
+            start_idea(&not_path, &files_limit)
         }
+        "stats" => compute_stats(&not_path, &files_limit),
         "append" => append(&not_path, &files_limit),
         _ => {
             eprintln!("Unknown command: {}", args[1]);
