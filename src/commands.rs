@@ -127,3 +127,40 @@ pub fn list_ideas() -> io::Result<()> {
     println!("List existing ideas...");
     Ok(())
 }
+
+pub fn not_film_viewing(not_path: &str) -> io::Result<()> {
+    println!("Creating a not for film viewing...");
+
+    // select the last file in the not folder
+    let not_files = match get_files_from_path(not_path.into()) {
+        Ok(files) => files,
+        Err(err) => {
+            eprintln!("Error retrieving files: {}", err);
+            return Ok(());
+        }
+    };
+
+    // todo: I need to complete here the uid and time
+    // and to pass vars for configuring "Visionnage" and "Nom du film"
+    // append the not about film viewing to the last file
+    if let Some(last_md_file) = not_files.last() {
+        println!("Found last `.md` file: {}", last_md_file.display());
+
+        let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(last_md_file)?;
+
+        writeln!(file, "\n## [nost-film] Visionnage")?;
+        writeln!(file, "\n[//]: # \"not_film:{{uid: '', time: ''}}\"")?;
+        writeln!(file, "\n<Nom du film> à <heure de visionnage>")?;
+
+        println!(
+            "Content appended successfully to {}",
+            last_md_file.display()
+        );
+    } else {
+        println!("No `.md` files found in the not folder.");
+    }
+    Ok(())
+}

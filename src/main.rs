@@ -1,7 +1,7 @@
 mod commands;
 mod files;
 
-use commands::{append, compute_stats, list_ideas, print_commands, start_idea};
+use commands::{append, compute_stats, list_ideas, not_film_viewing, print_commands, start_idea};
 use dotenv::dotenv;
 use std::env;
 use std::io;
@@ -23,6 +23,7 @@ fn main() -> io::Result<()> {
     }
 
     match args[1].as_str() {
+        "film" => not_film_viewing(&not_path),
         "idea" => {
             if args.len() < 3 {
                 return list_ideas();
