@@ -1,7 +1,9 @@
 use crate::files::get_files_from_path;
+use chrono::Local;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::{fs, io};
+use uuid::Uuid;
 
 pub fn print_commands() {
     eprintln!("Available commands:");
@@ -140,10 +142,15 @@ pub fn not_film_viewing(not_path: &str) -> io::Result<()> {
         }
     };
 
-    // todo: I need to complete here the uid and time
-    // and to pass vars for configuring "Visionnage" and "Nom du film"
+    // todo: pass vars for configuring "Visionnage" and "Nom du film"
     // append the not about film viewing to the last file
     if let Some(last_md_file) = not_files.last() {
+        let uid = Uuid::new_v4();
+        let now = Local::now();
+
+        // Format the datetime as a string
+        let formatted_datetime = now.format("%Y-%m-%d %H:%M:%S").to_string();
+
         println!("Found last `.md` file: {}", last_md_file.display());
 
         let mut file = OpenOptions::new()
@@ -152,7 +159,11 @@ pub fn not_film_viewing(not_path: &str) -> io::Result<()> {
             .open(last_md_file)?;
 
         writeln!(file, "\n## [nost-film] Visionnage")?;
-        writeln!(file, "\n[//]: # \"not_film:{{uid: '', time: ''}}\"")?;
+        writeln!(
+            file,
+            "\n[//]: # \"not_film:{{uid: {}, time: {} }}\"",
+            uid, formatted_datetime
+        )?;
         writeln!(file, "\n<Nom du film> à <heure de visionnage>")?;
 
         println!(
