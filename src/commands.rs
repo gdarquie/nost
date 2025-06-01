@@ -1,5 +1,6 @@
 use crate::files::get_files_from_path;
 use chrono::Local;
+use chrono::NaiveTime;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::{fs, io};
@@ -8,8 +9,7 @@ use uuid::Uuid;
 pub fn print_commands() {
     eprintln!("Available commands:");
     eprintln!("  stats                Get stats from not files");
-    eprintln!("  extract <keyword>    Extract content with a specific keyword");
-    eprintln!("  append               Append content to a file");
+    eprintln!("  film <title>         Add a visionnage reference for film viewing");
 }
 
 pub fn compute_stats(not_path: &str, _files_limit: &usize) -> io::Result<()> {
@@ -37,43 +37,6 @@ pub fn compute_stats(not_path: &str, _files_limit: &usize) -> io::Result<()> {
         Err(err) => {
             eprintln!("Error retrieving files: {}", err);
         }
-    }
-
-    Ok(())
-}
-
-pub fn append(not_path: &str, _files_limit: &usize) -> io::Result<()> {
-    println!("Appending content to the last `.md` file in the not folder...");
-
-    // Find all `.md` files in the NOT_PATH directory
-    let md_files = match get_files_from_path(not_path.into()) {
-        Ok(files) => files,
-        Err(err) => {
-            eprintln!("Error retrieving files: {}", err);
-            return Ok(());
-        }
-    };
-
-    // Get the last `.md` file
-    if let Some(last_md_file) = md_files.last() {
-        println!("Found last `.md` file: {}", last_md_file.display());
-
-        // Append content to the file
-        let mut file = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open(last_md_file)?;
-
-        writeln!(file, "\n")?;
-        writeln!(file, "[//]: # \"extract-start-test\"")?;
-        writeln!(file, "\n")?;
-        writeln!(file, "[//]: # \"extract-end-test\"")?;
-        println!(
-            "Content appended successfully to {}",
-            last_md_file.display()
-        );
-    } else {
-        println!("No `.md` files found in the not folder.");
     }
 
     Ok(())
@@ -130,7 +93,7 @@ pub fn list_ideas() -> io::Result<()> {
     Ok(())
 }
 
-pub fn not_film_viewing(not_path: &str) -> io::Result<()> {
+pub fn not_film_viewing(not_path: &str, title: &str, viewing_time: Option<&str>) -> io::Result<()> {
     println!("Creating a not for film viewing...");
 
     // select the last file in the not folder
@@ -142,14 +105,18 @@ pub fn not_film_viewing(not_path: &str) -> io::Result<()> {
         }
     };
 
-    // todo: pass vars for configuring "Visionnage" and "Nom du film"
-    // append the not about film viewing to the last file
     if let Some(last_md_file) = not_files.last() {
         let uid = Uuid::new_v4();
         let now = Local::now();
 
-        // Format the datetime as a string
-        let formatted_datetime = now.format("%Y-%m-%d %H:%M:%S").to_string();
+        // Check and validate the viewing_time
+        let checked_time = viewing_time
+            .and_then(|time| {
+                NaiveTime::parse_from_str(time, "%H:%M")
+                    .map(|_| time.to_string())
+                    .ok()
+            })
+            .unwrap_or_else(|| now.format("%H:%M").to_string());
 
         println!("Found last `.md` file: {}", last_md_file.display());
 
@@ -161,10 +128,10 @@ pub fn not_film_viewing(not_path: &str) -> io::Result<()> {
         writeln!(file, "\n## [nost-film] Visionnage")?;
         writeln!(
             file,
-            "\n[//]: # \"not_film:{{uid: {}, time: {} }}\"",
-            uid, formatted_datetime
+            "\n[//]: # \"not_film:{{uid: {}, time: {}, name: {} }}\"",
+            uid, &checked_time, &title
         )?;
-        writeln!(file, "\n<Nom du film> à <heure de visionnage>")?;
+        writeln!(file, "\n{} - {}", title, &checked_time)?;
 
         println!(
             "Content appended successfully to {}",

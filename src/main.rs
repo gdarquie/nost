@@ -1,7 +1,7 @@
 mod commands;
 mod files;
 
-use commands::{append, compute_stats, list_ideas, not_film_viewing, print_commands, start_idea};
+use commands::{compute_stats, list_ideas, not_film_viewing, print_commands, start_idea};
 use dotenv::dotenv;
 use std::env;
 use std::io;
@@ -23,7 +23,14 @@ fn main() -> io::Result<()> {
     }
 
     match args[1].as_str() {
-        "film" => not_film_viewing(&not_path),
+        "film" => {
+            if args.len() < 3 {
+                eprintln!("You need to provide a film name.");
+                return Ok(());
+            }
+            let viewing_time = if args.len() > 3 { Some(&args[3]) } else { None };
+            not_film_viewing(&not_path, &args[2], viewing_time.map(|x| x.as_str()))
+        }
         "idea" => {
             if args.len() < 3 {
                 return list_ideas();
@@ -33,7 +40,6 @@ fn main() -> io::Result<()> {
             start_idea(&not_path, &files_limit)
         }
         "stats" => compute_stats(&not_path, &files_limit),
-        "append" => append(&not_path, &files_limit),
         _ => {
             eprintln!("Unknown command: {}", args[1]);
             eprintln!("Use 'cargo run' without arguments to see available commands.");
